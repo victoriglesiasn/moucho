@@ -43,7 +43,9 @@ jobs:
         shell: pwsh
         run: |
           $r = $env:LO_ROOT
-          $quitar = @('help','readmes','share\gallery','share\template','share\autotext','share\wordbook')
+          $quitar = @('help','readmes','share\gallery','share\template','share\autotext','share\wordbook','share\extensions')
+          # Temas de iconos: basta con uno
+          Get-ChildItem "$r\share\config" -Filter 'images_*.zip' | Where-Object { $_.Name -notmatch '^images_colibre\.zip$' } | Remove-Item -Force
           foreach ($q in $quitar) { if (Test-Path "$r\$q") { Remove-Item "$r\$q" -Recurse -Force; Write-Host "quitado $q" } }
           Remove-Item "$r\lo.msi" -Force -ErrorAction SilentlyContinue
           # Las fuentes de LibreOffice (Carlito, Caladea, Liberation…): LibreOffice las carga solo desde share\fonts\truetype
