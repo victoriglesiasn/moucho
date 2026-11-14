@@ -36,10 +36,18 @@ jobs:
           $quitar = @('help','readmes','share\gallery','share\template','share\autotext','share\wordbook','share\extensions','share\autocorr',
                       'share\Scripts','share\basic','share\wizards','presets','program\wizards','sdk')
           foreach ($q in $quitar) { if (Test-Path "$r\$q") { Remove-Item "$r\$q" -Recurse -Force; Write-Host "quitado $q" } }
+          Remove-Item "$r\lo.msi" -Force -ErrorAction SilentlyContinue
+          # Las fuentes de LibreOffice (Carlito, Caladea, Liberation…): LibreOffice las carga solo desde share\fonts\truetype
+          New-Item -ItemType Directory "$r\share\fonts\truetype" -Force | Out-Null
+          Move-Item "$r\Fonts\*" "$r\share\fonts\truetype\" -Force; Remove-Item "$r\Fonts" -Recurse -Force
+          # Librerías de Visual C++ junto al programa, por si el ordenador no las tiene
+          foreach ($d in 'System64','System') { if (Test-Path "$r\$d") { Get-ChildItem "$r\$d" -Filter *.dll | Where-Object { -not (Test-Path "$r\program\$($_.Name)") } | ForEach-Object { if ($d -eq 'System64') { Copy-Item $_.FullName "$r\program\" } }; Remove-Item "$r\$d" -Recurse -Force } }
           Get-ChildItem "$r\program" -Directory -Filter 'python-core*' | Remove-Item -Recurse -Force
           Get-ChildItem "$r\program" -Filter 'python*.exe' | Remove-Item -Force
           $mb = [math]::Round((Get-ChildItem $r -Recurse -File | Measure-Object Length -Sum).Sum / 1MB)
           Write-Host "Tamaño final: $mb MB"
+          Get-ChildItem $r -Directory | ForEach-Object { "{0,8} MB  {1}" -f [math]::Round((Get-ChildItem $_.FullName -Recurse -File | Measure-Object Length -Sum).Sum / 1MB), $_.Name }
+          Get-ChildItem "$r\program" -Recurse -File | Sort-Object Length -Descending | Select-Object -First 15 | ForEach-Object { "{0,8} MB  {1}" -f [math]::Round($_.Length / 1MB, 1), $_.Name }
           Write-Host "Fuentes incluidas:"; Get-ChildItem "$r\share\fonts\truetype" | Select-Object -ExpandProperty Name
       - name: Probar que convierte un PowerPoint
         shell: pwsh
