@@ -1,0 +1,66 @@
+# Prepara el LibreOffice que va dentro del instalador de Moucho (para abrir PowerPoint sin tener PowerPoint).
+# Se lanza a mano desde la pestaña Actions. Deja el resultado en un borrador de versión (no público).
+name: LibreOffice para Moucho
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  preparar:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar la última versión estable
+        shell: pwsh
+        run: |
+          $base = 'https://download.documentfoundation.org/libreoffice/stable/'
+          $vers = (Invoke-WebRequest $base -UseBasicParsing).Links.href | Where-Object { $_ -match '^\d+\.\d+\.\d+/$' } | ForEach-Object { $_.TrimEnd('/') }
+          $ver = $vers | Sort-Object { [version]$_ } | Select-Object -Last 1
+          "LO_VER=$ver" | Out-File $env:GITHUB_ENV -Append
+          $msi = "LibreOffice_${ver}_Win_x86-64.msi"
+          Invoke-WebRequest "$base$ver/win/x86_64/$msi" -OutFile lo.msi -UseBasicParsing
+          Write-Host "LibreOffice $ver descargado: $((Get-Item lo.msi).Length / 1MB) MB"
+      - name: Extraer sin instalar
+        shell: pwsh
+        run: |
+          Start-Process msiexec -ArgumentList '/a','lo.msi','/qn',"TARGETDIR=$env:RUNNER_TEMP\lo" -Wait
+          $soffice = Get-ChildItem "$env:RUNNER_TEMP\lo" -Recurse -Filter soffice.exe | Select-Object -First 1
+          $root = $soffice.Directory.Parent.FullName
+          "LO_ROOT=$root" | Out-File $env:GITHUB_ENV -Append
+          Write-Host "Raíz: $root"
+          Get-ChildItem $root | Format-Table Name
+      - name: Quitar lo que no hace falta para convertir
+        shell: pwsh
+        run: |
+          $r = $env:LO_ROOT
+          $quitar = @('help','readmes','share\gallery','share\template','share\autotext','share\wordbook','share\extensions','share\autocorr',
+                      'share\Scripts','share\basic','share\wizards','presets','program\wizards','sdk')
+          foreach ($q in $quitar) { if (Test-Path "$r\$q") { Remove-Item "$r\$q" -Recurse -Force; Write-Host "quitado $q" } }
+          Get-ChildItem "$r\program" -Directory -Filter 'python-core*' | Remove-Item -Recurse -Force
+          Get-ChildItem "$r\program" -Filter 'python*.exe' | Remove-Item -Force
+          $mb = [math]::Round((Get-ChildItem $r -Recurse -File | Measure-Object Length -Sum).Sum / 1MB)
+          Write-Host "Tamaño final: $mb MB"
+          Write-Host "Fuentes incluidas:"; Get-ChildItem "$r\share\fonts\truetype" | Select-Object -ExpandProperty Name
+      - name: Probar que convierte un PowerPoint
+        shell: pwsh
+        run: |
+          $out = "$env:RUNNER_TEMP\out"; New-Item -ItemType Directory $out | Out-Null
+          $prof = 'file:///' + ("$env:RUNNER_TEMP\perfil" -replace '\\','/')
+          & "$env:LO_ROOT\program\soffice.exe" "-env:UserInstallation=$prof" --headless --norestore --convert-to pdf --outdir $out herramientas\prueba.pptx | Out-Host
+          if (-not (Test-Path "$out\prueba.pdf")) { throw 'No convirtió' }
+          Write-Host "OK: $((Get-Item "$out\prueba.pdf").Length) bytes"
+      - name: Empaquetar
+        shell: pwsh
+        run: |
+          Push-Location $env:LO_ROOT
+          7z a -tzip -mx=5 "$env:GITHUB_WORKSPACE\libreoffice-win64.zip" * | Select-Object -Last 3
+          Pop-Location
+          Write-Host "Zip: $((Get-Item libreoffice-win64.zip).Length / 1MB) MB"
+      - name: Guardar en un borrador de versión
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $tag = "libreoffice-$env:LO_VER"
+          gh release delete $tag --yes 2>$null
+          gh release create $tag libreoffice-win64.zip --draft --title "LibreOffice $env:LO_VER (para el instalador)" --notes "Uso interno: se mete dentro del instalador de Moucho."
