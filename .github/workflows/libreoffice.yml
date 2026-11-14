@@ -29,6 +29,16 @@ jobs:
           "LO_ROOT=$root" | Out-File $env:GITHUB_ENV -Append
           Write-Host "Raíz: $root"
           Get-ChildItem $root | Format-Table Name
+      - name: Probar antes de recortar
+        shell: pwsh
+        run: |
+          $out = "$env:RUNNER_TEMP\out0"; New-Item -ItemType Directory $out -Force | Out-Null
+          $prof = 'file:///' + ("$env:RUNNER_TEMP\perfil0" -replace '\\','/')
+          $loargs = @("-env:UserInstallation=$prof", '--headless', '--norestore', '--nologo', '--nofirststartwizard', '--convert-to', 'pdf', '--outdir', $out, "$env:GITHUB_WORKSPACE\herramientas\prueba.pptx")
+          $p = Start-Process "$env:LO_ROOT\program\soffice.com" -ArgumentList $loargs -PassThru -NoNewWindow
+          if (-not $p.WaitForExit(150000)) { Get-Process soffice* | Format-Table Name,Id,MainWindowTitle | Out-Host; Get-Process soffice* | Stop-Process -Force; throw 'LibreOffice se quedó colgado' }
+          if (-not (Test-Path "$out\prueba.pdf")) { throw "No convirtió (código $($p.ExitCode))" }
+          Write-Host "OK: $((Get-Item "$out\prueba.pdf").Length) bytes"
       - name: Quitar lo que no hace falta para convertir
         shell: pwsh
         run: |
@@ -52,10 +62,12 @@ jobs:
       - name: Probar que convierte un PowerPoint
         shell: pwsh
         run: |
-          $out = "$env:RUNNER_TEMP\out"; New-Item -ItemType Directory $out | Out-Null
+          $out = "$env:RUNNER_TEMP\out"; New-Item -ItemType Directory $out -Force | Out-Null
           $prof = 'file:///' + ("$env:RUNNER_TEMP\perfil" -replace '\\','/')
-          & "$env:LO_ROOT\program\soffice.exe" "-env:UserInstallation=$prof" --headless --norestore --convert-to pdf --outdir $out herramientas\prueba.pptx | Out-Host
-          if (-not (Test-Path "$out\prueba.pdf")) { throw 'No convirtió' }
+          $loargs = @("-env:UserInstallation=$prof", '--headless', '--norestore', '--nologo', '--nofirststartwizard', '--convert-to', 'pdf', '--outdir', $out, "$env:GITHUB_WORKSPACE\herramientas\prueba.pptx")
+          $p = Start-Process "$env:LO_ROOT\program\soffice.com" -ArgumentList $loargs -PassThru -NoNewWindow
+          if (-not $p.WaitForExit(150000)) { Get-Process soffice* | Format-Table Name,Id,MainWindowTitle | Out-Host; Get-Process soffice* | Stop-Process -Force; throw 'LibreOffice se quedó colgado' }
+          if (-not (Test-Path "$out\prueba.pdf")) { throw "No convirtió (código $($p.ExitCode))" }
           Write-Host "OK: $((Get-Item "$out\prueba.pdf").Length) bytes"
       - name: Empaquetar
         shell: pwsh
