@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Moucho · Presentador de PDF y PowerPoint</title>
+<meta name="description" content="Moucho by Víctor Iglesias: presenta PDF y PowerPoint con vista de la siguiente diapositiva, notas en otra pantalla, vídeos con sonido y salida HDMI o NDI. Gratis para Windows.">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="fonts/onest.css">
+<style>
+  /* Una sola columna centrada: búho, nombre, botón de descarga, qué hace y cómo instalarlo */
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --ink:#14181f; --muted:#5f6875; --line:#e1e5ea;
+    --accent:#2563eb; --accent-dark:#1d4ed8; --amber:#f2a31b;
+    --font:"Onest","Segoe UI",system-ui,sans-serif;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:720px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+  .hero{text-align:center;padding-block:56px 36px}
+  .hero img{width:112px;height:112px}
+  h1{font-size:clamp(40px,8vw,56px);font-weight:700;letter-spacing:-.035em;line-height:1;margin:14px 0 4px}
+  .by{color:var(--muted);font-size:15px;margin:0}
+  .lead{font-size:19px;max-width:30em;margin:18px auto 0;text-wrap:balance}
+
+  .dl{display:inline-flex;align-items:center;gap:12px;margin-top:28px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:19px;padding:15px 28px;border-radius:12px;box-shadow:0 10px 24px -12px rgba(37,99,235,.7);transition:background .15s,transform .15s}
+  .dl:hover{background:var(--accent-dark);transform:translateY(-1px)}
+  .dl:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+  .dl svg{width:22px;height:22px}
+  .meta{margin-top:12px;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+
+  section{padding-block:8px 28px}
+  h2{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 20px}
+  ul.feat{list-style:none;margin:0;padding:0}
+  ul.feat li{display:grid;grid-template-columns:22px 1fr;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+  ul.feat li:last-child{border-bottom:0}
+  ul.feat li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--amber);margin:9px 0 0 6px}
+  ul.feat b{font-weight:600}
+  ol.steps{margin:0;padding:14px 20px 14px 40px}
+  ol.steps li{padding:5px 0}
+  kbd{font-family:var(--font);font-size:13px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 6px;background:var(--bg)}
+  footer{border-top:1px solid var(--line);margin-top:20px}
+  footer .wrap{padding-block:22px;color:var(--muted);font-size:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body>
+<main>
+  <header class="hero wrap">
+    <img src="moucho.png" alt="Búho de Moucho" width="112" height="112">
+    <h1>Moucho</h1>
+    <p class="by">by Víctor Iglesias</p>
+    <p class="lead">Presenta tus PDF y PowerPoint como en el directo: la sala ve la diapositiva y tú ves la siguiente, tus notas y el tiempo.</p>
+    <a class="dl" id="dl" href="https://github.com/victoriglesiasn/moucho/releases/download/v1.3.1/Moucho-Setup-1.3.1.exe">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6 10l6 6 6-6M5 20h14"/></svg>
+      Descargar para Windows
+    </a>
+    <div class="meta">Gratis · Windows 10 y 11 · versión 1.3.1 · 245 MB</div>
+  </header>
+
+  <section class="wrap">
+    <h2>Qué hace</h2>
+    <div class="card">
+      <ul class="feat">
+        <li><span><b>PDF y PowerPoint</b> a pantalla completa por HDMI o por NDI (para Resolume, vMix u OBS).</span></li>
+        <li><span><b>Vídeos del PowerPoint con sonido</b>: arrancan solos o con el pasadiapositivas, y eliges por qué salida de audio suenan.</span></li>
+        <li><span><b>Notas</b> del PowerPoint en tu pantalla o en un monitor aparte.</span></li>
+        <li><span><b>Lista de presentaciones</b>: cárgalas todas al principio y cambia entre ellas con confirmación.</span></li>
+        <li><span><b>Siguiente diapositiva</b>, contador, hora y cronómetro siempre a la vista.</span></li>
+        <li><span><b>Pasadiapositivas USB</b> detectado al momento, incluso con otro programa delante.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <h2>Cómo instalarlo</h2>
+    <div class="card">
+      <ol class="steps">
+        <li>Descarga el instalador y ábrelo con doble clic.</li>
+        <li>Si Windows avisa, pulsa <kbd>Más información</kbd> y luego <kbd>Ejecutar de todas formas</kbd>.</li>
+        <li>Pulsa <kbd>Instalar</kbd>. Moucho queda en el escritorio y en el menú Inicio, y se desinstala como cualquier programa.</li>
+        <li>Arrastra tus PDF y PowerPoint a la ventana. No hace falta tener PowerPoint instalado: Moucho lleva su propio conversor.</li>
+      </ol>
+    </div>
+  </section>
+</main>
+<footer><div class="wrap"><span>Moucho by Víctor Iglesias</span><span>Feito en Galicia</span></div></footer>
+</body>
+</html>
